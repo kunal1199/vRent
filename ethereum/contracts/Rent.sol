@@ -185,8 +185,6 @@ contract Rent{
         );
     }
 
-    // to return availablity of vehicle
-    function getAvailablity() public view returns(bool){
-       return availablity;
-    }
 }
+
+//TODO: 1. managerCount not decrementing anywhere, decrement it

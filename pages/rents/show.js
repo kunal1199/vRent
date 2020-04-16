@@ -1,3 +1,6 @@
+//TODO: 1.Firebase Stuff needs to be removed (or replaced)
+//2. Fixing the address problem with request security fee button
+
 import firebase from 'firebase';
 import React ,{ Component } from 'react';
 import { Form,Button,Card,Message,Grid } from 'semantic-ui-react';
@@ -109,7 +112,7 @@ readUserData = async () => {
       {
         header: 'Rent per Day',
         meta:'' ,
-        description: rentPerDay + ' wei per day'
+        description: rentPerDay + ' wei'
       }
     ];
 
@@ -233,11 +236,6 @@ readUserData = async () => {
           </Grid.Row>
           <Grid.Row>
             {this.renderCheck()}
-          </Grid.Row>
-          <Grid.Row>
-            <Form onSubmit={this.onSubmitIOT} >
-              <Button style={{ marginLeft: '13px' }}secondary >See Location</Button>
-            </Form>
           </Grid.Row>
         </Grid>
       </Layout>

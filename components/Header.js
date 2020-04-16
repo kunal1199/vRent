@@ -6,7 +6,7 @@ export default () => {
   return (
     <Menu style={{ marginTop: '10px' }} inverted>
       <Link route="/">
-        <a className="item">Rental System</a>
+        <a className="item">vRent</a>
       </Link>
 
       <Menu.Menu position="right">

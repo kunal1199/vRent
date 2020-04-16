@@ -12,16 +12,19 @@ class RentContractIndex extends Component {
       const rent = RentContract(address);
       const valueofpopularity = await rent.methods.popularity().call();
       const valueofname = await rent.methods.getName().call();
-      const valueofavailablity = await rent.methods.getAvailablity().call();
+      const valueofavailablity = await rent.methods.availablity().call();
+      const valueofrentPerDay = await rent.methods.rentPerDay().call();
       return {
         keys: "values",
         addr: address,
         name: valueofname,
         availablity: valueofavailablity,
-        popularity: valueofpopularity
+        popularity: valueofpopularity,
+        rentPerDay: valueofrentPerDay
       };
     });
     const finalresults = await Promise.all(promiseArray);
+    console.log(finalresults);
     return { finalresults };
   }
   giveAvailability(check){
@@ -43,7 +46,10 @@ class RentContractIndex extends Component {
   renderRentContracts() {
     const items = this.props.finalresults.map((result) => {
       return {
-        header: <div style={{fontSize: '24px', color:'black'}}><h1>{result.name}</h1></div>,
+        header: <React.Fragment>
+          <div style={{fontSize: '24px', color:'black'}}><h1>{result.name}</h1></div>
+          <div style={{fontSize: '24px', color:'black', position: 'absolute', top: '50%', right: '10px', transform: 'translateY(-50%)'}}>Rent per day - {result.rentPerDay} wei</div>
+        </React.Fragment>,
         description: (
           <div style={{color: this.getColor(result.availablity), fontSize: '20px'}}>
           <br></br>
@@ -54,7 +60,7 @@ class RentContractIndex extends Component {
           </Link>
           </div>
         ),
-        meta: <div style={{fontSize: '16px', color:'maroon'}}>Popularity of Vehicle - {result.popularity}</div>,
+        meta:<div style={{fontSize: '16px', color:'maroon'}}>Popularity of Vehicle - {result.popularity}</div>,
         fluid: true
       };
     });
