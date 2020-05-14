@@ -14,40 +14,50 @@ contract FactoryRent{
   uint public managerCount;
  // constructor
   function FactoryRent() public {
-    managerCount=0;// initial value
+    managerCount = 0;// initial value
   }
 
   // function for creating Rent Contract by manager
-  function createRent(uint sec,string desc,uint rnt,string nme) public{
+  function createRent(uint sec,string desc,uint rnt,string nme) public returns(address){
     address newRent = new Rent(sec,desc,rnt,nme,msg.sender);
     RentDeployed.push(newRent);
     managerContractList[msg.sender].push(newRent);
     if(!managerList[msg.sender]){
       managerCount++;
     }
-    managerList[msg.sender]=true;
+    managerList[msg.sender] = true;
+    return newRent;
   }
 
   // only manager can delete this contract
   // its updates managerContractList after deleting Rent Contract
   function deleteRent(address toDelete) public {
     require(managerList[msg.sender]);
-    bool flag=false;
-    for(uint i=0;i<managerContractList[msg.sender].length;i++){
+    bool flag = false;
+    for(uint i = 0;i<managerContractList[msg.sender].length;i++){
         if(managerContractList[msg.sender][i]==toDelete){
-          flag=true;
+          flag = true;
+          if(managerContractList[msg.sender].length == 1){
+            managerCount--;
+            managerContractList[msg.sender].length--;
+          }
+          else{
+            managerContractList[msg.sender][i] = managerContractList[msg.sender][managerContractList[msg.sender].length - 1];
+            managerContractList[msg.sender].length--;
+          }
+          break;
         }
     }
     require(flag);
     uint index;
     // now delete from list of deployed rent contracts
-    for(uint j=0;j<RentDeployed.length;j++){
+    for(uint j = 0;j<RentDeployed.length;j++){
       if(RentDeployed[j]==toDelete){
-        index=j;
+        index = j;
       }
     }
     if(RentDeployed.length>1){
-      RentDeployed[index]=RentDeployed[RentDeployed.length-1];
+      RentDeployed[index] = RentDeployed[RentDeployed.length-1];
     }
     RentDeployed.length--;
   }
@@ -73,9 +83,9 @@ contract Rent{
   address public manager;// who deployed this contract
   string name;// short name of Vehicle
   uint public security;// security money
-  bool public availablity;
+  int public availability;//-1:maintenance 0:rented 1:available
   string public description; // full description about vehicle
-  address[] public pastRents;// list of peoples who rent this vehicle
+  address[] public pastRents;// list of people who rented this vehicle
   uint public popularity;// how many times vehicle rented
   uint public rentPerDay;
   string public rentingTime;//time at which he take vehicle at rent
@@ -89,95 +99,95 @@ contract Rent{
 
   // constructor to set initial properties
   function Rent(uint sec,string desc,uint rnt,string nme,address creator) public{
-    security=sec;
-    name=nme;
-    manager=creator;
-    description=desc;
-    availablity=true;
-    popularity=0;
-    rentPerDay=rnt;
-    rentingTime="";
-    timeOfRent=0;
+    security = sec;
+    name = nme;
+    manager = creator;
+    description = desc;
+    availability = 1;
+    popularity = 0;
+    rentPerDay = rnt;
+    rentingTime = "";
+    timeOfRent = 0;
   }
 
   // take vehicle on rent
   // this method send money to contract
   function takeRent(uint dys,string currentTime) public payable{
-    uint total=dys*rentPerDay+security;
+    uint total = dys*rentPerDay+security;
     require(msg.value>=total);
-    require(availablity);
-    timeOfRent=dys;
-    rentingTime=currentTime;
-    availablity=false;
+    require(availability == 1);
+    timeOfRent = dys;
+    rentingTime = currentTime;
+    availability = 0;
     popularity++;
     pastRents.push(msg.sender);
   }
 
   // manager can edit details about vehicle
-  function editDetails(string newname,uint newsecurity,string newDescription,uint newrentPerDay,bool newstatus) public restricted{
+  function editDetails(string newname,uint newsecurity,string newDescription,uint newrentPerDay) public restricted{
     name = newname;
-    security=newsecurity;
-    description=newDescription;
-    rentPerDay=newrentPerDay;
-    availablity=newstatus;
-  }
-  /*
-  function editName(string newName) public restricted{
-    name=newName;
-  }
-  function editSecurity(uint newSecurity) public restricted{
-    security=newSecurity;
+    security = newsecurity;
+    description = newDescription;
+    rentPerDay = newrentPerDay;
   }
 
-  function editAvaialblity(bool newAvaialble) public restricted{
-    availablity=newAvaialble;
-  }
-
-  function editDescription(string newDescription) public restricted{
-    description=newDescription;
-  }
-
-  function editRentPerDay(uint newRentPerDay) public restricted{
-    rentPerDay=newRentPerDay;
-  }
-*/
 // return security amount to tenant
 // rentpay send to manager of contract
   function returnSecurity() public {
-    uint len=pastRents.length;
+    uint len = pastRents.length;
     require(msg.sender == pastRents[len-1]);
     msg.sender.transfer(security);
     manager.transfer(address(this).balance);
-    availablity=true;
-    rentingTime="";
-    timeOfRent=0;
+    availability = 1;
+    rentingTime = "";
+    timeOfRent = 0;
   }
+  
 // get short name of the vehicle
   function getName() public  view returns(string){
     return name;
   }
 
+  //get the person currently leasing the vehicle
+  function getCurrentLessor() public view returns(address){
+    uint len = pastRents.length;
+    if(len == 0){
+      return 0;
+    }
+    else{
+      return pastRents[len-1];  
+    }
+  }
+
+  function takeOnMaintenance() public restricted{
+    availability = -1;
+  }
+  
+  function returnFromMaintenance() public restricted{
+    availability = 1;
+  }
+
   // to deduct certain amount of money from security
   function cutSecurity(uint amountTobeDeduct) public{
-    uint len=pastRents.length;
+    uint len = pastRents.length;
     require(msg.sender == pastRents[len-1]);
     if(amountTobeDeduct<security){
-      msg.sender.transfer(security- amountTobeDeduct);
+      msg.sender.transfer(security - amountTobeDeduct);
     }
     manager.transfer(address(this).balance);
-    availablity=true;
-    rentingTime="";
-    timeOfRent=0;
+    availability = 1;
+    rentingTime = "";
+    timeOfRent = 0;
   }
 
 // to get all details about contract
   function getSummary() public view returns (
-    address, uint, bool, string, uint, uint,string
+    address, uint, int, string, uint, uint,string
     ) {
       return (
         manager,
         security,
-        availablity,
+        availability,
         description,
         popularity,
         rentPerDay,
@@ -186,5 +196,3 @@ contract Rent{
     }
 
 }
-
-//TODO: 1. managerCount not decrementing anywhere, decrement it

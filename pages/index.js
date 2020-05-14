@@ -12,13 +12,13 @@ class RentContractIndex extends Component {
       const rent = RentContract(address);
       const valueofpopularity = await rent.methods.popularity().call();
       const valueofname = await rent.methods.getName().call();
-      const valueofavailablity = await rent.methods.availablity().call();
+      const valueofavailability = await rent.methods.availability().call();
       const valueofrentPerDay = await rent.methods.rentPerDay().call();
       return {
         keys: "values",
         addr: address,
         name: valueofname,
-        availablity: valueofavailablity,
+        availability: valueofavailability,
         popularity: valueofpopularity,
         rentPerDay: valueofrentPerDay
       };
@@ -28,7 +28,7 @@ class RentContractIndex extends Component {
     return { finalresults };
   }
   giveAvailability(check){
-    if(check){
+    if(check == 1){
       return "Available";
     }
     else{
@@ -36,7 +36,7 @@ class RentContractIndex extends Component {
     }
   }
   getColor(check){
-    if(check){
+    if(check == 1){
       return "green";
     }
     else{
@@ -51,9 +51,9 @@ class RentContractIndex extends Component {
           <div style={{fontSize: '24px', color:'black', position: 'absolute', top: '50%', right: '10px', transform: 'translateY(-50%)'}}>Rent per day - {result.rentPerDay} wei</div>
         </React.Fragment>,
         description: (
-          <div style={{color: this.getColor(result.availablity), fontSize: '20px'}}>
+          <div style={{color: this.getColor(result.availability), fontSize: '20px'}}>
           <br></br>
-          Vehicle  {this.giveAvailability(result.availablity)}
+          Vehicle  {this.giveAvailability(result.availability)}
           <br></br><br></br>
           <Link route={`/rents/${result.addr}`} >
             <a>Check Details</a>

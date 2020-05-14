@@ -15,6 +15,7 @@ class RequestIndex extends Component {
 
     return {
       contractAddress: props.query.rentalAddress,
+      managerAddress: summary[0],
       security: summary[1],
       availablity: summary[2],
       description: summary[3],
@@ -31,8 +32,23 @@ class RequestIndex extends Component {
     description: this.props.description,
     rentPerDay: this.props.rentPerDay,
     errorMessage: '',
-    loading: false
+    loading: false,
+    currentAddress:''
   };
+
+  componentDidMount = async () => {
+    await ethereum.enable();
+    const accounts = await web3.eth.getAccounts();
+    this.setState({currentAddress: accounts[0]});
+    console.log(accounts[0]);
+    console.log(this.state.currentAddress);
+  }
+
+  componentDidUpdate = async () => {
+    await ethereum.enable();
+    const accounts = await web3.eth.getAccounts();
+    this.setState({currentAddress: accounts[0], errorMessage: ''});
+  }
 
   onSubmit = async event => {
     event.preventDefault();
@@ -44,7 +60,7 @@ class RequestIndex extends Component {
       const accounts = await web3.eth.getAccounts();
       const rents = RentContract(this.state.contractAddress);
       await rents.methods
-        .editDetails(this.state.showName,this.state.minimumSecurity,this.state.description,this.state.rentPerDay,true)
+        .editDetails(this.state.showName,this.state.minimumSecurity,this.state.description,this.state.rentPerDay)
         .send({
           from: accounts[0]
         });
@@ -107,8 +123,11 @@ class RequestIndex extends Component {
             />
           </Form.Field>
           <Message error header="Oops!" content={this.state.errorMessage} />
-          <Button loading={this.state.loading} primary>
-            Edit Details!
+          <Button 
+          loading={this.state.loading} 
+          disabled={this.props.managerAddress != this.state.currentAddress}
+          primary>
+            Edit!
           </Button>
         </Form>
       </Layout>
