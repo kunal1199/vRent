@@ -47,7 +47,7 @@ class RequestIndex extends Component {
   componentDidUpdate = async () => {
     await ethereum.enable();
     const accounts = await web3.eth.getAccounts();
-    this.setState({currentAddress: accounts[0], errorMessage: ''});
+    this.setState({ currentAddress: accounts[0] });
   }
 
   onSubmit = async event => {
