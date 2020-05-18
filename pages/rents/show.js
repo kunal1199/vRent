@@ -11,6 +11,8 @@ import TakeOnRentForm from '../../components/TakeOnRentForm';
 import factory from '../../ethereum/factory'
 import { Link } from '../../routes';
 import { Router } from '../../routes';
+import Spinner from '../../components/Spinner/Spinner';
+
 var config = {
     apiKey: "AIzaSyBOXnxoeGG8qwjOuOm_hoTTTPR53VUH_qw",
     authDomain: "major-3898b.firebaseapp.com",
@@ -46,8 +48,19 @@ class RentShow extends Component {
     buttonLoading2:false,
     messageError2: '',
     latitude:'',
-    longitude:''
+    longitude:'',
+    pageloading:true
   };
+
+  componentWillMount() {
+    this.setState({pageloading: true});
+  }
+
+  componentDidMount() {
+    this.setState({pageloading: false});
+  }
+
+
   checkavail(availablity){
     if(availablity){
       return <span style={{color: 'green'}}>Vehicle Available</span>;
@@ -184,7 +197,6 @@ readUserData = async () => {
     if(this.props.availablity){
       return(
         <Grid.Column>
-
           <Form  error={!!this.state.messageError && !!this.state.messageError2} onSubmit={this.onSubmitForm}>
           <Link route={`/rents/${this.props.contractAddress}/requests`}>
             <a>
@@ -226,9 +238,7 @@ readUserData = async () => {
   }
 
   render() {
-    return (
-      <Layout>
-        <h3>{this.props.name}</h3>
+    let contents = (
         <Grid>
           <Grid.Row>
             <Grid.Column width={10}>{this.renderCards()}</Grid.Column>
@@ -237,7 +247,14 @@ readUserData = async () => {
           <Grid.Row>
             {this.renderCheck()}
           </Grid.Row>
-        </Grid>
+        </Grid>);
+    if(this.state.pageloading) {
+      contents = <Spinner/>
+    }
+    return (
+      <Layout>
+        <h3>{this.props.name}</h3>
+        {contents}
       </Layout>
     );
   }

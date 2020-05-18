@@ -1,3 +1,4 @@
+
 // specific version of solidity
 pragma solidity ^0.4.17;
 
@@ -18,7 +19,7 @@ contract FactoryRent{
   }
 
   // function for creating Rent Contract by manager
-  function createRent(uint sec,string desc,uint rnt,string nme) public{
+  function createRent(uint sec,string desc,uint rnt,string nme) public returns (address){
     address newRent = new Rent(sec,desc,rnt,nme,msg.sender);
     RentDeployed.push(newRent);
     managerContractList[msg.sender].push(newRent);
@@ -26,6 +27,7 @@ contract FactoryRent{
       managerCount++;
     }
     managerList[msg.sender]=true;
+    return newRent;
   }
 
   // only manager can delete this contract

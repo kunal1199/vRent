@@ -4,8 +4,18 @@ import factory from '../ethereum/factory';
 import Layout from '../components/Layout';
 import { Link } from '../routes';
 import RentContract from '../ethereum/rentContract';
+import Spinner from '../components/Spinner/Spinner';
 
 class RentContractIndex extends Component {
+  state = {
+    loading: true
+  }
+  componentWillMount() {
+    this.setState({loading: true});
+  }
+  componentDidMount() {
+    this.setState({loading: false});
+  }
   static async getInitialProps() {
     const listOfRents = await factory.methods.returnDeployedList().call();
     const promiseArray = listOfRents.map(async (address) => {
@@ -47,7 +57,7 @@ class RentContractIndex extends Component {
     const items = this.props.finalresults.map((result) => {
       return {
         header: <React.Fragment>
-          <div style={{fontSize: '24px', color:'black'}}><h1>{result.name}</h1></div>
+          <div style={{fontSize: '24px', color:'black'}}><Link route={`/rents/${result.addr}`} ><a><h1>{result.name}</h1></a></Link></div>
           <div style={{fontSize: '24px', color:'black', position: 'absolute', top: '50%', right: '10px', transform: 'translateY(-50%)'}}>Rent per day - {result.rentPerDay} wei</div>
         </React.Fragment>,
         description: (
@@ -61,7 +71,8 @@ class RentContractIndex extends Component {
           </div>
         ),
         meta:<div style={{fontSize: '16px', color:'maroon'}}>Popularity of Vehicle - {result.popularity}</div>,
-        fluid: true
+        fluid: true,
+        key: result.addr
       };
     });
 
@@ -69,22 +80,28 @@ class RentContractIndex extends Component {
   }
 
   render() {
+    let contents = (<div>
+                        <h3 style={{ marginTop: '50px' }}>Registered Vehicles</h3>
+                        <Link route="/rents/new">
+                          <a>
+                            <Button
+                              content="Rent Your Vehicle"
+                              floated="right" 
+                              icon="add circle"
+                              secondary
+                            />
+                          </a>
+                        </Link>
+                        <div style={{cursor: 'default'}}>
+                          {this.renderRentContracts()}
+                        </div>
+                      </div>);
+    if(this.state.loading) {
+      contents=<Spinner/>
+    }
     return (
       <Layout>
-        <div>
-          <h3 style={{ marginTop: '50px' }}>Registered Vehicles</h3>
-          <Link route="/rents/new">
-            <a>
-              <Button
-                content="Rent Your Vehicle"
-                floated="right" 
-                icon="add circle"
-                secondary
-              />
-            </a>
-          </Link>
-          {this.renderRentContracts()}
-        </div>
+        {contents}
       </Layout>
     );
   }
