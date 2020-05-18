@@ -9,7 +9,9 @@ import axios from 'axios';
 import Spinner from '../../components/Spinner/Spinner';
 const firebase_url = 'https://locationsender-majorproj.firebaseio.com/names';
 
+
 class CampaignNew extends Component {
+
   state = {
     rentForm: {
         showName: {
@@ -80,6 +82,9 @@ class CampaignNew extends Component {
   }
 
   componentDidMount() {
+    if(!localStorage.getItem('token')) {
+      Router.push('/auth')
+    }
     this.setState({pageloading : false})
   }
 

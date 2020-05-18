@@ -80,9 +80,10 @@ class RentContractIndex extends Component {
   }
 
   render() {
+    const path = localStorage.getItem('token') ? "/rents/new" : "/auth"
     let contents = (<div>
                         <h3 style={{ marginTop: '50px' }}>Registered Vehicles</h3>
-                        <Link route="/rents/new">
+                        <Link route={path}>
                           <a>
                             <Button
                               content="Rent Your Vehicle"
