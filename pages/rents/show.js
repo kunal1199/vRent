@@ -1,7 +1,7 @@
-//TODO: 1.Firebase Stuff needs to be removed (or replaced)
-
+//TODO:Get Location button action 
+import firebase from 'firebase';
 import React ,{ Component } from 'react';
-import { Form,Button,Card,Message,Grid, GridColumn } from 'semantic-ui-react';
+import { Form,Button,Card,Message,Grid} from 'semantic-ui-react';
 import Layout from '../../components/Layout';
 import RentContract from '../../ethereum/rentContract';
 import web3 from '../../ethereum/web3';
@@ -9,6 +9,21 @@ import TakeOnRentForm from '../../components/TakeOnRentForm';
 import factory from '../../ethereum/factory'
 import { Link } from '../../routes';
 import { Router } from '../../routes';
+import Spinner from '../../components/Spinner/Spinner';
+
+var config = {
+    apiKey: "AIzaSyBOXnxoeGG8qwjOuOm_hoTTTPR53VUH_qw",
+    authDomain: "major-3898b.firebaseapp.com",
+    databaseURL: "https://major-3898b.firebaseio.com",
+    projectId: "major-3898b",
+    storageBucket: "major-3898b.appspot.com",
+    messagingSenderId: "706047098506"
+  };
+
+  if (!firebase.apps.length) {
+    firebase.initializeApp(config);
+}
+
 
 class RentShow extends Component {
 
@@ -37,13 +52,18 @@ class RentShow extends Component {
     messageError2:'',
     latitude:'',
     longitude:'',
-    currentAddress:''
+    currentAddress:'',
+    pageloading:true
   };
+
+  componentWillMount = () => {
+    this.setState({pageloading: true});
+  }
 
   componentDidMount = async () => {
     await ethereum.enable();
     const accounts = await web3.eth.getAccounts();
-    this.setState({currentAddress: accounts[0]});
+    this.setState({currentAddress: accounts[0], pageloading: false});
     console.log(accounts[0]);
     console.log(this.state.currentAddress);
   }
@@ -65,6 +85,17 @@ class RentShow extends Component {
       return <span style={{color: 'red'}}>Vehicle under Maintenance</span>;
     }
   }
+
+  readUserData = async () => {
+    await firebase.database().ref('Accounts/username/devices/15').once('value',(snapshot) => {
+      console.log(snapshot.val());
+      this.setState({
+        latitude:snapshot.val().latitude,
+        longitude:snapshot.val().longitude
+      })
+    });
+    console.log(this.state.latitude);
+  };
 
   renderCards() {
     const {
@@ -170,6 +201,14 @@ class RentShow extends Component {
     }
 
     this.setState({ buttonLoading: false });
+  };
+
+  onSubmitIOT = async event => {
+    event.preventDefault();
+    await this.readUserData();
+    const pathlink="https://maps.google.com/maps?q="+this.state.latitude+","+this.state.longitude;
+    //console.log(pathlink);
+    window.open(pathlink);
   };
 
   takeOnMaintenance = async event => {
@@ -325,29 +364,33 @@ class RentShow extends Component {
   }
 
   render(){
-    let lat = "24.5675";
-    let long = "57.8234";
-    let location_link = "https://www.google.com/maps/place/"+lat+","+long;
+    let contents = (
+      <Grid>
+        <Grid.Row>
+          <Grid.Column width={10}>{this.renderCards()}</Grid.Column>
+          {this.renderColumn()}
+        </Grid.Row>
+        <Grid.Row>
+          {this.renderCheck()}
+        </Grid.Row>
+        <Grid.Row>
+          <Grid.Column>
+          <a target="_blank">
+            <Button>Get Location</Button>
+          </a>
+          </Grid.Column>
+        </Grid.Row>
+      </Grid>
+    )
+
+    if(this.state.pageloading) {
+      contents = <Spinner/>
+    }
 
     return (
       <Layout>
         <h3>{this.props.name}</h3>
-        <Grid>
-          <Grid.Row>
-            <Grid.Column width={10}>{this.renderCards()}</Grid.Column>
-            {this.renderColumn()}
-          </Grid.Row>
-          <Grid.Row>
-            {this.renderCheck()}
-          </Grid.Row>
-          <Grid.Row>
-            <Grid.Column>
-            <a href={location_link} target="_blank">
-              <Button>Get Location</Button>
-            </a>
-            </Grid.Column>
-          </Grid.Row>
-        </Grid>
+        {contents}
       </Layout>
     );
   }

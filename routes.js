@@ -4,6 +4,8 @@ routes
   .add('/home','/')
   .add('/rents/new', '/rents/new')
   .add('/rents/:rentalAddress', '/rents/show')
+  .add('/auth', '/auth')
+  .add('/logout', '/logout')
   .add('/rents/:rentalAddress/requests', '/rents/requests/index');
 
 module.exports = routes;
