@@ -37,7 +37,8 @@ class CampaignNew extends Component {
           value: '',
           sidelabel: 'wei',
           validation: {
-            required: true
+            required: true,
+            isNumber: true
           },
           valid: false,
           touched: false
@@ -65,7 +66,8 @@ class CampaignNew extends Component {
           value: '',
           sidelabel: 'wei',
           validation: {
-            required: true
+            required: true,
+            isNumber: true
           },
           valid: false,
           touched: false
@@ -131,6 +133,9 @@ class CampaignNew extends Component {
     if(rules.maxLength && isValid) {
       isValid = (value.length<=rules.maxLength)
     }
+    if(rules.isNumber && isValid) {
+      isValid = (parseInt(value)>0)
+    }
     return isValid;
   }
 
@@ -163,9 +168,7 @@ class CampaignNew extends Component {
     let contents = (
       fields.map( field => {
               return <Input
-                sidelabel = {field.sidelabel}
                 label = {field.label}
-                labelPosition = "right"
                 value={this.state.rentForm[field.value]}
                 key={field.id}
                 elementConfig={field.elementConfig}

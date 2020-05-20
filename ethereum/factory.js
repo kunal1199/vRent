@@ -4,7 +4,7 @@ import RentFactory from './build/FactoryRent.json';
 
 const instance = new web3.eth.Contract(
   JSON.parse(RentFactory.interface),
-  '0x5B86a76987DaB5f698BD1Ff9fcC5E8a23D344E19'
+  '0x50E0F9e8D8057f7Cf32f3023A5F835969d380E21'
 );
 
 export default instance;

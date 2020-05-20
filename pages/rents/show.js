@@ -1,5 +1,3 @@
-//TODO:Get Location button action 
-import firebase from 'firebase';
 import React ,{ Component } from 'react';
 import { Form,Button,Card,Message,Grid} from 'semantic-ui-react';
 import Layout from '../../components/Layout';
@@ -10,20 +8,7 @@ import factory from '../../ethereum/factory'
 import { Link } from '../../routes';
 import { Router } from '../../routes';
 import Spinner from '../../components/Spinner/Spinner';
-
-var config = {
-    apiKey: "AIzaSyBOXnxoeGG8qwjOuOm_hoTTTPR53VUH_qw",
-    authDomain: "major-3898b.firebaseapp.com",
-    databaseURL: "https://major-3898b.firebaseio.com",
-    projectId: "major-3898b",
-    storageBucket: "major-3898b.appspot.com",
-    messagingSenderId: "706047098506"
-  };
-
-  if (!firebase.apps.length) {
-    firebase.initializeApp(config);
-}
-
+import axios from 'axios';
 
 class RentShow extends Component {
 
@@ -63,15 +48,17 @@ class RentShow extends Component {
   componentDidMount = async () => {
     await ethereum.enable();
     const accounts = await web3.eth.getAccounts();
-    this.setState({currentAddress: accounts[0], pageloading: false});
-    console.log(accounts[0]);
-    console.log(this.state.currentAddress);
+    if(this.state.currentAddress!==accounts[0]){
+      this.setState({currentAddress: accounts[0], pageloading: false});
+    }
   }
 
   componentDidUpdate = async () => {
     await ethereum.enable();
     const accounts = await web3.eth.getAccounts();
-    this.setState({currentAddress: accounts[0]});
+    if(this.state.currentAddress!==accounts[0]){
+      this.setState({currentAddress: accounts[0]});
+    }
   }
 
   checkavail(availability){
@@ -85,17 +72,6 @@ class RentShow extends Component {
       return <span style={{color: 'red'}}>Vehicle under Maintenance</span>;
     }
   }
-
-  readUserData = async () => {
-    await firebase.database().ref('Accounts/username/devices/15').once('value',(snapshot) => {
-      console.log(snapshot.val());
-      this.setState({
-        latitude:snapshot.val().latitude,
-        longitude:snapshot.val().longitude
-      })
-    });
-    console.log(this.state.latitude);
-  };
 
   renderCards() {
     const {
@@ -125,7 +101,7 @@ class RentShow extends Component {
         'Minimum security to pay (wei) : ' + security
       },
       {
-        header: 'availability',
+        header: 'Availability',
         meta: '',
         description: this.checkavail(availability)
       },
@@ -203,14 +179,6 @@ class RentShow extends Component {
     this.setState({ buttonLoading: false });
   };
 
-  onSubmitIOT = async event => {
-    event.preventDefault();
-    await this.readUserData();
-    const pathlink="https://maps.google.com/maps?q="+this.state.latitude+","+this.state.longitude;
-    //console.log(pathlink);
-    window.open(pathlink);
-  };
-
   takeOnMaintenance = async event => {
     event.preventDefault();
 
@@ -230,6 +198,21 @@ class RentShow extends Component {
       this.setState({ messageError: err.message });
     } 
     this.setState({ buttonLoading2: false});
+  }
+
+  getLocation = () => {
+    axios.get('https://locationsender-majorproj.firebaseio.com/locations.json')
+         .then(res => {
+            if(res.data[this.props.contractAddress]) {
+              const lat = res.data[this.props.contractAddress].lat
+              const lon = res.data[this.props.contractAddress].lon
+              const pathlink="https://maps.google.com/maps?q="+lat+","+lon;
+              window.open(pathlink)
+            }
+            else {
+              alert("Please update the location first!")
+            }
+         });
   }
 
   returnFromMaintenance = async event => {
@@ -376,7 +359,7 @@ class RentShow extends Component {
         <Grid.Row>
           <Grid.Column>
           <a target="_blank">
-            <Button>Get Location</Button>
+            <Button onClick={this.getLocation}>Get Location</Button>
           </a>
           </Grid.Column>
         </Grid.Row>
